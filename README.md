@@ -1,6 +1,6 @@
 # Desafio
 
-#Provider (AWS):
+# Provider (AWS):
 Define o provedor da AWS e especifica a região como us-east-1.
 
 ##Variáveis (projeto e candidato):
