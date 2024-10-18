@@ -215,3 +215,15 @@ Firewall: Considerar a implementação de um firewall adicional, como o AWS WAF,
 
 ## Automação de Atualizações: 
 O script user_data realiza uma atualização completa do sistema ao iniciar, o que é uma prática útil para garantir que o sistema esteja atualizado, porém pode aumentar o tempo de inicialização da instância.
+
+
+# Descrição Técnica das Alterações Feitas no código
+***Restrição de Acesso SSH***: A regra de segurança foi ajustada para restringir o acesso SSH a um IP confiável definido na variável trusted_ip. Isso impede que qualquer pessoa fora dessa rede tente acessar a instância via SSH.
+
+***Desabilitar Autenticação via Senha:*** No script de user_data, foi adicionada uma linha para desativar o uso de senhas no SSH. Assim, o acesso à instância será feito exclusivamente por chaves SSH, aumentando a segurança.
+
+***Instalação Automatizada do Nginx:*** O script também foi modificado para instalar e iniciar o Nginx automaticamente na inicialização da instância. O serviço também é configurado para iniciar automaticamente em reinicializações.
+
+## ***Outras Melhorias***
+A inclusão da automação da instalação do Nginx reduz a necessidade de intervenção manual após o provisionamento da instância.
+Melhor controle sobre o acesso SSH ajuda a evitar ataques de força bruta.
