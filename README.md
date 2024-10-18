@@ -1,6 +1,10 @@
 # Desafio
 
 ## Provider (AWS):
+`provider "aws" {
+  region = "us-east-1"
+}`
+
 Define o provedor da AWS e especifica a região como us-east-1.
 
 ## Variáveis (projeto e candidato):
