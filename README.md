@@ -4,6 +4,7 @@
 `provider "aws" {
   region = "us-east-1"
 }`
+
 Define o provedor da AWS e especifica a região como us-east-1.
 
 ## Variáveis (projeto e candidato):
@@ -18,6 +19,7 @@ Define o provedor da AWS e especifica a região como us-east-1.
   type        = string
   default     = "SeuNome"
 }`
+
 Define variáveis para o nome do projeto e o nome do candidato, que são usadas para nomear os recursos criados.
 
 ## TLS Private Key:
@@ -25,6 +27,7 @@ Define variáveis para o nome do projeto e o nome do candidato, que são usadas 
   algorithm = "RSA"
   rsa_bits  = 2048
 }`
+
 Gera uma chave privada RSA de 2048 bits, que será usada para acessar a instância EC2.
 
 ## AWS Key Pair:
@@ -32,6 +35,7 @@ Gera uma chave privada RSA de 2048 bits, que será usada para acessar a instânc
   key_name   = "${var.projeto}-${var.candidato}-key"
   public_key = tls_private_key.ec2_key.public_key_openssh
 }`
+
 Cria um par de chaves na AWS utilizando a chave pública gerada no recurso tls_private_key. Essa chave será usada para autenticar via SSH na instância EC2.
 
 ## VPC (Virtual Private Cloud):
@@ -44,6 +48,7 @@ Cria um par de chaves na AWS utilizando a chave pública gerada no recurso tls_p
     Name = "${var.projeto}-${var.candidato}-vpc"
   }
 }`
+
 Cria uma VPC com o bloco CIDR 10.0.0.0/16, habilitando suporte a DNS e nomes de host. A VPC é a rede virtual na qual todos os outros recursos estarão contidos.
 
 ## Subnet:
@@ -56,6 +61,7 @@ Cria uma VPC com o bloco CIDR 10.0.0.0/16, habilitando suporte a DNS e nomes de 
     Name = "${var.projeto}-${var.candidato}-subnet"
   }
 }`
+
 Cria uma subnet dentro da VPC com o bloco CIDR 10.0.1.0/24, alocada na zona de disponibilidade us-east-1a. A subnet é a divisão de rede onde a instância EC2 será provisionada.
 
 ## Internet Gateway:
@@ -66,6 +72,7 @@ Cria uma subnet dentro da VPC com o bloco CIDR 10.0.1.0/24, alocada na zona de d
     Name = "${var.projeto}-${var.candidato}-igw"
   }
 }`
+
 Cria um Internet Gateway, permitindo que a VPC tenha comunicação com a Internet.
 
 ## Route Table e Association:
@@ -90,16 +97,17 @@ Cria um Internet Gateway, permitindo que a VPC tenha comunicação com a Interne
     Name = "${var.projeto}-${var.candidato}-route_table_association"
   }
 }`
+
 Cria uma tabela de rotas e adiciona uma rota padrão (0.0.0.0/0) para redirecionar o tráfego para o Internet Gateway.
 Associa a tabela de rotas com a subnet, permitindo que a subnet tenha acesso à Internet via a rota criada.
 
-## Security Group:
+# Security Group:
 `resource "aws_security_group" "main_sg" {
   name        = "${var.projeto}-${var.candidato}-sg"
   description = "Permitir SSH de qualquer lugar e todo o tráfego de saída"
   vpc_id      = aws_vpc.main_vpc.id`
 
-  # Regras de entrada
+  ## Regras de entrada
   `ingress {
     description      = "Allow SSH from anywhere"
     from_port        = 22
@@ -109,7 +117,7 @@ Associa a tabela de rotas com a subnet, permitindo que a subnet tenha acesso à 
     ipv6_cidr_blocks = ["::/0"]
   }`
 
-  # Regras de saída
+  ## Regras de saída
   `egress {
     description      = "Allow all outbound traffic"
     from_port        = 0
@@ -123,6 +131,7 @@ Associa a tabela de rotas com a subnet, permitindo que a subnet tenha acesso à 
     Name = "${var.projeto}-${var.candidato}-sg"
   }
 }`
+
 Cria um Security Group para a VPC, definindo as regras de segurança:
 Entrada: Permite acesso SSH (porta 22) de qualquer endereço IP (0.0.0.0/0 e IPv6 ::/0).
 Saída: Permite todo o tráfego de saída (sem restrições).
@@ -142,6 +151,7 @@ Saída: Permite todo o tráfego de saída (sem restrições).
   }
   owners = ["679593333241"]
 }`
+
 Busca a AMI mais recente da distribuição Debian 12, filtrando por debian-12-amd64-* e com suporte a virtualização HVM.
 
 ## Instância EC2:
@@ -170,6 +180,7 @@ Busca a AMI mais recente da distribuição Debian 12, filtrando por debian-12-am
     Name = "${var.projeto}-${var.candidato}-ec2"
   }
 }`
+
 Cria uma instância EC2 utilizando a AMI Debian 12 com o tipo de instância t2.micro.
 A instância é criada na subnet definida, com o IP público associado, segurança fornecida pelo Security Group e o par de chaves gerado previamente.
 O disco de root tem tamanho de 20 GB e tipo gp2 (SSD padrão).
@@ -189,3 +200,18 @@ Inclui um script de inicialização (user_data) para atualizar o sistema Debian 
 
 private_key: Exibe a chave privada (sensível) para acessar a instância EC2.
 ec2_public_ip: Exibe o endereço IP público da instância EC2 criada.
+
+# Observações:
+
+## Restrições de SSH:
+Grupos de Segurança: Restringir o acesso SSH a IPs específicos é crucial. Utilizar grupos de segurança para permitir o acesso apenas de IPs confiáveis.
+SSH Keys: Considerar utilizar chaves SSH públicas para autenticar o acesso, em vez de senhas. Isso oferece uma camada adicional de segurança.
+Fail2ban: Implementar um sistema como o Fail2ban para bloquear automaticamente IPs que tentam fazer login por SSH várias vezes sem sucesso.
+
+## Proteção contra Ataques:
+MFA: Configurar a autenticação de dois fatores (MFA) para a conta da AWS que está sendo utilizada para maior segurança.
+IAM Roles: Utilizar papéis IAM (Identity and Access Management) para conceder permissões mínimas necessárias à instância EC2, evitando a necessidade de chaves de acesso root.
+Firewall: Considerar a implementação de um firewall adicional, como o AWS WAF, para proteger a aplicação contra ataques web.
+
+## Automação de Atualizações: 
+O script user_data realiza uma atualização completa do sistema ao iniciar, o que é uma prática útil para garantir que o sistema esteja atualizado, porém pode aumentar o tempo de inicialização da instância.
