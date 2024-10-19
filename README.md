@@ -273,5 +273,6 @@ Exemplo:
 Após rodar terraform apply, para acessar a instância EC2 via SSH, execute:
 
 `ssh -i <caminho/para/a/chave_privada.pem> ec2-user@<ip_publico_da_ec2>`
+
 Substitua `<caminho/para/a/chave_privada.pem>` pela chave privada exibida pelo output do Terraform, e `<ip_publico_da_ec2>` pelo IP público que foi gerado.
 
