@@ -227,3 +227,51 @@ O script user_data realiza uma atualização completa do sistema ao iniciar, o q
 ## ***Outras Melhorias***
 A inclusão da automação da instalação do Nginx reduz a necessidade de intervenção manual após o provisionamento da instância.
 Melhor controle sobre o acesso SSH ajuda a evitar ataques de força bruta.
+
+# Pré-requisitos e instuções
+Conta AWS: Certifique-se de ter uma conta AWS válida e com permissões suficientes para criar os recursos descritos (VPC, subnets, instâncias EC2, etc.).
+
+## AWS CLI Configurado:
+
+Instale o AWS CLI: AWS CLI Installation
+Execute o comando aws configure para definir as credenciais de acesso (Access Key ID e Secret Access Key) e a região (us-east-1 é usada neste arquivo).
+Terraform Instalado:
+
+## Instale o Terraform:
+Passos Detalhados para Iniciar e Aplicar a Configuração Terraform
+Arquivo Terraform: Primeiro, tenha certeza que o conteúdo fornecido está em um arquivo com a extensão .tf (por exemplo, main.tf).
+
+## Comandos Terraform: 
+Dentro do diretório onde está seu arquivo main.tf, você precisará rodar os seguintes comandos:
+
+## 1. terraform init
+Objetivo: Inicializa o diretório atual como um ambiente de trabalho Terraform. Ele baixa e instala os plugins necessários (como o plugin AWS).
+Comando:
+`terraform init`
+
+## 2. terraform plan
+Objetivo: Gera um plano de execução, mostrando o que será criado, modificado ou destruído sem realmente aplicar as mudanças. Este comando é útil para revisar as mudanças antes de executar.
+Comando:
+
+`terraform plan`
+
+Saída esperada:
+O Terraform mostrará a lista de todos os recursos que ele vai criar. Nenhuma mudança será aplicada nesta etapa.
+
+## 3. terraform apply
+Objetivo: Executa o plano gerado e aplica as mudanças, criando a infraestrutura na AWS.
+Comando:
+
+`terraform apply`
+
+## Interatividade: O Terraform solicitará confirmação. Você pode adicionar a flag -auto-approve para não precisar confirmar manualmente.
+Exemplo:
+
+`terraform apply -auto-approve`
+
+## Conectando-se à Instância EC2:
+Após rodar terraform apply, para acessar a instância EC2 via SSH, execute:
+
+`ssh -i <caminho/para/a/chave_privada.pem> ec2-user@<ip_publico_da_ec2>`
+Substitua `<caminho/para/a/chave_privada.pem>` pela chave privada exibida pelo output do Terraform, e `<ip_publico_da_ec2>` pelo IP público que foi gerado.
+
